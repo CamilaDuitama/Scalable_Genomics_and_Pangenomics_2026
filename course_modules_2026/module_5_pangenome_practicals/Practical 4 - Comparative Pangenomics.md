@@ -29,7 +29,7 @@ In this practical you will:
 
 ## Preface: whole-genome synteny before the chr14 deep-dive
 
-This practical focuses on a single chromosome (chr14), but it helps to first see what the Mumemto synteny looks like over the **full** *S. cerevisiae* collection (22 assemblies, ~12 Mb each). Most tracks are largely collinear: conserved exact matches run as vertical ribbons between neighbouring genomes. A handful of assemblies look clearly “off” relative to the rest, with messy crossing ribbons or blocks that flip orientation. Red ticks represent contig boundaries. 
+This practical focuses on a single chromosome (chr14), but it helps to first see what the Mumemto synteny looks like over the **full** *S. cerevisiae* collection (22 assemblies, ~12 Mb each). Most tracks are largely collinear: conserved exact matches run as vertical ribbons between neighbouring genomes. A handful of assemblies look clearly “off” relative to the rest, with messy crossing ribbons or blocks that flip orientation. Red ticks represent contig boundaries (using `mumemto viz ... --mode delineated`). 
 
 Looking at the plot below, you can see a few aberrant assemblies. What you can glean from the synteny? Misassemblies, shuffled contig order, orientation flips (some corresponding to whole contigs), and potentially structural variation between strains? There are at least three assemblies here that are different; one has a different order and orientation of contigs, and at least two have a merged chromosome (could be a SV join or a misassembly).
 
