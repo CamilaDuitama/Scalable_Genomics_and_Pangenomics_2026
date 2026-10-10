@@ -508,11 +508,10 @@ echo "=== linear CHM13 MHC ==="
 vg stats -a "$ANALYSIS_DIR/reads.mhc_chm13.gam" "$VG_DIR/mhc_chm13/mhc_chm13.giraffe.gbz"
 ```
 
-**Discuss (2–3 minutes):**
+**Discuss:**
 
-- Total **aligned** counts are often similar — what does that imply about *whether* reads map, versus *how well* they map?
+- Total **aligned** counts are often similar. What does that imply about *whether* reads map, versus *how well* they map?
 - Mean **alignment score** and **perfect / gapless** counts: which index looks more confident for these reads, and why might that track donor haplotype rather than “CHM13 correctness”?
-- **Softclips** and indel/substitution totals: are differences evenly spread, or concentrated in reads you would expect to be structurally divergent from CHM13?
 
 ---
 
