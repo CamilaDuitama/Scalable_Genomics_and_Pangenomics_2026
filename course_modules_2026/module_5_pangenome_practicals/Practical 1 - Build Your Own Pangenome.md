@@ -10,7 +10,7 @@ In this practical session, we will run a few tools that “build” different no
 
 **Docker Image with all the tools pre-installed:** [npmalfoy/scalable:2026](https://hub.docker.com/r/npmalfoy/scalable) (`linux/amd64`)
 
-**Course data (FTP):** [https://ftp.ebi.ac.uk/pub/databases/metagenomics/research-team/shivakumar/scalable_course/](https://ftp.ebi.ac.uk/pub/databases/metagenomics/research-team/shivakumar/scalable_course/)
+**Course data:** [https://kj11.cog.sanger.ac.uk/#kmer_course_data/kmer_course_data/](https://kj11.cog.sanger.ac.uk/#kmer_course_data/kmer_course_data/)
 
 > Expected runtimes and memory below are rough guidelines based on running on an M5 MacBook Pro (Docker `linux/amd64`). Your machine may differ; larger datasets than the yeast examples will take longer and use more RAM.
 
@@ -30,7 +30,36 @@ In this practical you will:
 
 ## 0) Pull the docker container and datasets
 
-See the course informatics guide for full setup instructions. Start in a clean working directory with the course tar archives downloaded, then unpack and start an interactive session:
+See the course informatics guide for full setup instructions. Start in a clean working directory, download the course archives, unpack them, then start an interactive session.
+
+**Course data downloads** (browse the [Sanger bucket](https://kj11.cog.sanger.ac.uk/#kmer_course_data/kmer_course_data/), or use the direct URLs below). Unpack these next to each other in your working directory (so you end up with `datasets/` and `data/`):
+
+| Archive                       | Size   | Required? | Contents                                                                 |
+| ----------------------------- | ------ | --------- | ------------------------------------------------------------------------ |
+| `datasets_agc.tar.gz`         | ~1.1G  | yes       | AGC assemblies                                                           |
+| `course_data.tar.gz`          | ~6.9G  | yes       | pre-built indexes / tool outputs / reads / MHC graph                     |
+| `alignments_athaliana.tar.gz` | ~1.1G  | yes       | `data/athaliana/alignments/*.paf` (pairwise PAFs for `impg`; the `.impg` index is built in this practical, not shipped) |
+
+**Download** (direct object URLs; `wget -c` resumes if interrupted — usually a bit simpler than `curl` for these large files):
+
+```bash
+BASE=https://kj11.cog.sanger.ac.uk/kmer_course_data/kmer_course_data
+wget -c "$BASE/datasets_agc.tar.gz"
+wget -c "$BASE/course_data.tar.gz"
+wget -c "$BASE/alignments_athaliana.tar.gz"
+```
+
+<details>
+<summary>curl alternative</summary>
+
+```bash
+BASE=https://kj11.cog.sanger.ac.uk/kmer_course_data/kmer_course_data
+curl -fL -C - -O "$BASE/datasets_agc.tar.gz"
+curl -fL -C - -O "$BASE/course_data.tar.gz"
+curl -fL -C - -O "$BASE/alignments_athaliana.tar.gz"
+```
+
+</details>
 
 **Unpack:**
 
@@ -180,7 +209,7 @@ Extra exercises:
 <summary>Compute the coverage of MUMs (how much of a given assembly is “shared” and unique across the pangenome?)</summary>
 
 ```bash
-mumemto coverage -i "$OUT/tool_outputs/mumemto/mumemto.bumbl"
+mumemto coverage -i "$OUT/tool_outputs/mumemto/mumemto"
 ```
 
 </details>
@@ -227,11 +256,14 @@ Outputs: a dynamic BWT (`.fmr`) and a static FM-index (`.fmd`)
 
 Extra exercise:
 
-Compute the size of the BWT
+<details>
+<summary>Compute the size of the BWT</summary>
 
 ```bash
 ropebwt3 stat "$OUT/tool_outputs/ropebwt3/rb3.fmd"
 ```
+
+</details>
 
 ---
 
