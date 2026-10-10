@@ -136,7 +136,7 @@ ls "$ALIGN_DIR"/*.paf | wc -l    # expect 171
 
 ## 2) Extract FASTAs from the AGC
 
-[AGC](https://github.com/refresh-bio/agc) stores the 19 chr14 assemblies in one archive. Decompress them into `$FASTA_DIR` for later steps (ntSynt optional section, and general inspection).
+[AGC](https://github.com/refresh-bio/agc) stores the 19 chr14 assemblies in one archive. Decompress them into `$FASTA_DIR` for later steps.
 
 **Expect:** <1 s; ~35 MiB RAM (`agc getcol`).
 
@@ -149,36 +149,6 @@ agc listset "$AGC" | head
 agc getcol -o "$FASTA_DIR" "$AGC"
 ls "$FASTA_DIR"/*.fa | wc -l   # expect 19
 ls "$FASTA_DIR" | head
-```
-
-</details>
-
-<details>
-<summary>Example output (agc listset / FASTA listing)</summary>
-
-```bash
-agc listset "$AGC" | head
-ls "$FASTA_DIR" | head
-```
-
-```text
-GCA_000146045.2_R64_genomic
-GCA_003086655.1_ASM308665v1_genomic
-GCA_949124045.1_AGK.nuclear_genome.ScRAP_genomic
-GCA_949124055.1_AEG.nuclear_genome.ScRAP_genomic
-GCA_949124075.1_AFH.nuclear_genome.ScRAP_genomic
-GCA_949124095.1_AIE.nuclear_genome.ScRAP_genomic
-GCA_949124235.1_ADE.nuclear_genome.ScRAP_genomic
-GCA_949124265.1_AEH.nuclear_genome.ScRAP_genomic
-GCA_949124275.1_ADI.nuclear_genome.ScRAP_genomic
-GCA_949124295.1_ACH.nuclear_genome.ScRAP_genomic
-
-GCA_000146045.2_R64_genomic.fa
-GCA_003086655.1_ASM308665v1_genomic.fa
-GCA_949124045.1_AGK.nuclear_genome.ScRAP_genomic.fa
-GCA_949124055.1_AEG.nuclear_genome.ScRAP_genomic.fa
-GCA_949124075.1_AFH.nuclear_genome.ScRAP_genomic.fa
-…
 ```
 
 </details>
