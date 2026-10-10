@@ -491,9 +491,9 @@ Inputs: long-read Giraffe indexes from Practical 1 (`lr-giraffe`) and long HiFi 
 
 Outputs: GAM alignments for each index
 
-#### Optional: compare the two GAMs (reference bias)
+#### compare the two alignments (example of reference bias)
 
-The HiFi query reads are **I002C paternal**, not CHM13. Aligning them to a **single linear CHM13** path is the classic *reference bias* setup: where I002C carries haplotype structure absent from CHM13, the linear index can still “force” a placement (mismatches, indels, soft clips, lower scores). The **five-haplotype MHC graph** embeds more human variation in the same interval, so Giraffe can often choose a path that fits the read better even when both indexes report similar mapping rates.
+The HiFi query reads are **I002C paternal**, not CHM13. Aligning them to a **single linear CHM13** path may contain *reference bias* setup: where I002C containes variation absent from CHM13, alignments to a linear index may be poor quality (or not possible). Including multiple human haplotypes increases the variation in the graph, so the aligner could choose a path that fits the read better, yielding a better alignment.
 
 **Expect:** a few seconds per `vg stats -a` call; negligible RAM.
 
@@ -514,81 +514,12 @@ vg stats -a "$ANALYSIS_DIR/reads.mhc_chm13.gam" "$VG_DIR/mhc_chm13/mhc_chm13.gir
 - Mean **alignment score** and **perfect / gapless** counts: which index looks more confident for these reads, and why might that track donor haplotype rather than “CHM13 correctness”?
 - **Softclips** and indel/substitution totals: are differences evenly spread, or concentrated in reads you would expect to be structurally divergent from CHM13?
 
-<details>
-<summary>Per-read score join (graph vs CHM13)</summary>
-
-For a read-level view, export JSON alignments and join on read name. Positive `delta` means the pangenome-graph alignment scored higher than the CHM13-linear alignment for that read.
-
-```bash
-vg view -aGj "$ANALYSIS_DIR/reads.mhc.gam" \
-  | jq -s 'map({key:.name, value:{score:(.score//0), mq:(.mapping_quality//0)}}) | from_entries' \
-  > "$ANALYSIS_DIR/reads.mhc.scores.json"
-
-vg view -aGj "$ANALYSIS_DIR/reads.mhc_chm13.gam" \
-  | jq -s 'map({key:.name, value:{score:(.score//0), mq:(.mapping_quality//0)}}) | from_entries' \
-  > "$ANALYSIS_DIR/reads.mhc_chm13.scores.json"
-
-jq -n \
-  --slurpfile m "$ANALYSIS_DIR/reads.mhc.scores.json" \
-  --slurpfile c "$ANALYSIS_DIR/reads.mhc_chm13.scores.json" '
-  ($m[0] | keys) as $names |
-  [$names[] | . as $n | {
-    name: $n,
-    mhc_score: $m[0][$n].score,
-    chm13_score: $c[0][$n].score,
-    delta: ($m[0][$n].score - $c[0][$n].score)
-  }] | {
-    reads: length,
-    graph_higher: map(select(.delta > 0)) | length,
-    chm13_higher: map(select(.delta < 0)) | length,
-    tied: map(select(.delta == 0)) | length,
-    mean_delta: (map(.delta) | add / length)
-  }'
-
-# optional: list reads where CHM13 scored better
-jq -n \
-  --slurpfile m "$ANALYSIS_DIR/reads.mhc.scores.json" \
-  --slurpfile c "$ANALYSIS_DIR/reads.mhc_chm13.scores.json" '
-  ($m[0] | keys)[] | select($c[0][.] != null and $m[0][.].score < $c[0][.].score)
-' | head
-```
-
-On course dry-run data, **most** reads have higher graph scores; the short list where CHM13 wins is worth inspecting (repeats, path choice, or near-tie scores).
-
-</details>
-
-<details>
-<summary>Optional advanced: `vg gamcompare` (interpret carefully)</summary>
-
-`vg gamcompare` is built to score alignments against a **known-truth** GAM (simulation or truth tags), not to pick a “winner” between two real references. The workflow below is a **teaching probe only**: it projects the CHM13-linear placements onto the pangenome graph, then asks whether those positions lie within **50 kb** (graph distance) of the pangenome-graph placements — using the **graph GAM as stand-in “truth.”**
-
-**Do not over-interpret:** reversing truth/query swaps the verdict; neither GAM is biological ground truth for I002C; coordinate lift between CHM13-named and graph paths adds slack; and most disagreements may reflect path choice rather than mapping failure.
-
-```bash
-# project CHM13-linear alignments into coordinates on the MHC pangenome graph
-vg annotate -x "$VG_DIR/mhc/mhc.giraffe.gbz" -a "$ANALYSIS_DIR/reads.mhc_chm13.gam" \
-  > "$ANALYSIS_DIR/reads.mhc_chm13.on_mhc_graph.gam"
-
-# graph mapping = reference; CHM13-linear (annotated) = query; 50 kb tolerance for long reads / lift
-vg gamcompare -r 50000 -d "$VG_DIR/mhc/mhc.dist" \
-  "$ANALYSIS_DIR/reads.mhc_chm13.on_mhc_graph.gam" \
-  "$ANALYSIS_DIR/reads.mhc.gam" \
-  -T | tee "$ANALYSIS_DIR/gamcompare_graph_truth.tsv" | head
-
-# tally correct (1) vs incorrect (0) in column 1
-tail -n +2 "$ANALYSIS_DIR/gamcompare_graph_truth.tsv" | cut -f1 | sort | uniq -c
-```
-
-On course dry-run data, even with **50 kb** slack only a handful of reads are labeled “correct” — most projected CHM13 placements are **not** within graph distance of the pangenome-graph placement. That is expected when haplotypes diverge and when `gamcompare` is used without simulated truth; treat the table as a sanity check, not a verdict on which index is “right.”
-
-</details>
-
 ---
 
 
 ## 2) Optional: build an MHC graph with impg and compare to [minigraph-cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md)
 
-This optional exercise rebuilds an MHC variation graph with `impg` (the workflow that used to live in Practical 1) and compares it to the shipped [minigraph-cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md) MHC graph using BandageNG and graph stats.
+This optional exercise rebuilds an MHC variation graph with `impg` and compares it to the shipped [minigraph-cactus](https://github.com/ComparativeGenomicsToolkit/cactus/blob/master/doc/pangenome.md) MHC graph using BandageNG and graph stats.
 
 [impg](https://github.com/pangenome/impg) indexes and enables querying of genomic intervals across a pangenome using all-vs-all pairwise genome alignments. Running all-pairs alignments is not practical on a laptop, so we ship pre-computed human alignments (`alignments_human.tar.gz` — optional large download; unpacks to `data/human/alignments.paf`). Do **not** run `impg align` here. A companion `.impg` index for the shipped human PAF is already in `course_data` as `$DATA/human/alignments.paf.impg`. Skip this section if you did not download `alignments_human.tar.gz`.
 
@@ -646,37 +577,5 @@ vg stats -z "$ANALYSIS_DIR/mhc_mc.full.gfa"
 Inputs: the impg MHC GFA and the shipped minigraph-cactus MHC GFA
 
 Outputs: SVG layouts for both graphs plus printed `vg stats` summaries to compare
-
-### Optional: sequence compression (GFA vs input)
-
-Variation graphs store sequence on **S** lines; shared haplotype structure means the total S-line sequence is often much smaller than copying the same interval from every input assembly. Compare that total to a naive upper bound: the CHM13 MHC window size times the number of FASTA files in `$FASTA_DIR` from the impg step above.
-
-Task: For `mhc_impg.gfa` and `mhc_mc.full.gfa`, sum S-line sequence lengths (excluding `*` placeholders) and divide by the input total to get a simple compression ratio.
-
-<details>
-<summary>Show GFA vs input sequence totals</summary>
-
-```bash
-# CHM13 MHC window (same coords as the impg query): 4,920,493 bp
-MHC_BP=$((33301940 - 28381448 + 1))
-N=$(ls -1 "$FASTA_DIR"/*.fa | wc -l | tr -d ' ')
-INPUT_BP=$((MHC_BP * N))
-
-gfa_seq_bp() {
-  awk '$1=="S" && $3!="*" { n += length($3) } END { print n+0 }' "$1"
-}
-
-for gfa in "$ANALYSIS_DIR/mhc_impg.gfa" "$ANALYSIS_DIR/mhc_mc.full.gfa"; do
-  gfa_bp=$(gfa_seq_bp "$gfa")
-  ratio=$(awk -v g="$gfa_bp" -v i="$INPUT_BP" 'BEGIN { if (i > 0) printf "%.3f", g/i; else print "NA" }')
-  echo "$(basename "$gfa"): ${gfa_bp} bp S-lines / ${INPUT_BP} bp input → ratio ${ratio}"
-done
-```
-
-</details>
-
-The shipped minigraph-cactus MHC graph can include **more samples than the five** impg FASTAs; still use the same denominator (`MHC_BP × N` from `$FASTA_DIR`) so everyone compares graphs on equal footing in the classroom.
-
-On course data, the MC graph is typically about **~11 Mb** of S-line sequence versus **~24.6 Mb** input (**~0.45** ratio). The impg graph uses the same five assemblies and should compress as well, but totals can differ because it was built with `-o gfa:seqwish` without MC smoothing.
 
 ---
