@@ -292,7 +292,25 @@ syngpath2gbwt "$OUT/tool_outputs/syng/syng.1path" "$OUT/tool_outputs/syng/syng.1
 
 Inputs: a set of FASTA files
 
-Outputs: syng path / kmer files (e.g. `.1path`) and a GBWT (`.1gbwt`)
+Outputs: syng path / kmer files (e.g. `.1path`, `.1khash`) and a GBWT (`.1gbwt`)
+
+<details>
+<summary>How to view the output <code>.1path</code> file</summary>
+
+```bash
+ONEview "$OUT/tool_outputs/syng/syng.1path" | less
+```
+
+</details>
+
+<details>
+<summary>How to view the output <code>.1khash</code> file</summary>
+
+```bash
+ONEview "$OUT/tool_outputs/syng/syng.1khash" | less
+```
+
+</details>
 
 ---
 

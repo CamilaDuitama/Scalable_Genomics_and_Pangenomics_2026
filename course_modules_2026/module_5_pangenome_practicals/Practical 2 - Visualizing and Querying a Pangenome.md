@@ -472,16 +472,16 @@ BandageNG image "${BANDAGE_OPTS[@]}" "$ANALYSIS_DIR/flc.gfa" "$ANALYSIS_DIR/flc.
 
 </details>
 
-Optionally, thicken strokes further for readability. The Bandage settings above already draw thicker nodes/edges into the SVG; if you also want a thickened raster (e.g. for slides), use the same helper script from Practical 4 (`scripts/p4_thicken_png.py`):
+Optionally, thicken strokes further for readability. The Bandage settings above already draw thicker nodes/edges into the SVG; if you also want a thickened raster (e.g. for slides), use the same helper script from Practical 4 (`p4_thicken_png.py` — Pillow is already in the course image):
 
 <details>
 <summary>Optional: thicken a Bandage PNG</summary>
 
 ```bash
-SCRIPTS=/course/course_modules_2026/module_5_pangenome_practicals/scripts
+wget -q -O "$ANALYSIS_DIR/p4_thicken_png.py" \
+  https://raw.githubusercontent.com/WCSCourses/Scalable_Genomics_and_Pangenomics_2026/main/course_modules_2026/module_5_pangenome_practicals/scripts/p4_thicken_png.py
 BandageNG image "${BANDAGE_OPTS[@]}" "$ANALYSIS_DIR/flc.gfa" "$ANALYSIS_DIR/flc.png"
-# needs Pillow: python -c 'import PIL'
-python3 "$SCRIPTS/p4_thicken_png.py" --rounds 1 \
+python3 "$ANALYSIS_DIR/p4_thicken_png.py" --rounds 1 \
   -i "$ANALYSIS_DIR/flc.png" -o "$ANALYSIS_DIR/flc.thick.png"
 ```
 
