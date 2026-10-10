@@ -20,18 +20,18 @@ In this practical you will:
 
 1. Decompress the chr14 assemblies from the shipped AGC archive
 2. Visualise multi-MUM synteny and compute multi-MUM coverage on R64 chr14
-3. Build a multi-genome synteny plot with SVbyEye from shipped pairwise PAFs (all 19 genomes)
+3. Build a multi-genome synteny plot with SVbyEye from pairwise PAFs
 4. Render the PGGB and minigraph-cactus chr14 graphs with BandageNG
-5. *(Optional)* Install odgi in a temp env and paint multi-MUM intervals on the PGGB graph
-6. *(Optional)* Run ntSynt + ntsynt-viz in a temporary conda env
+5. *(Optional)* Use odgi to paint multi-MUM intervals on the PGGB graph
+6. *(Optional)* Run ntSynt + ntsynt-viz
 
 ---
 
 ## Preface: whole-genome synteny before the chr14 deep-dive
 
-This practical focuses on a single chromosome (chr14), but it helps to first see what multi-MUM synteny looks like over the **full** *S. cerevisiae* collection — 22 assemblies, ~12 Mb each. Most tracks are largely collinear: conserved exact matches run as vertical ribbons between neighbouring genomes. A handful of assemblies look clearly “off” relative to the rest — denser crossings, pinched ribbons, or blocks that flip orientation. Red ticks mark contig boundaries, so fragmentation and contig order show up in the layout as well as in the ribbons.
+This practical focuses on a single chromosome (chr14), but it helps to first see what the Mumemto synteny looks like over the **full** *S. cerevisiae* collection (22 assemblies, ~12 Mb each). Most tracks are largely collinear: conserved exact matches run as vertical ribbons between neighbouring genomes. A handful of assemblies look clearly “off” relative to the rest, with messy crossing ribbons or blocks that flip orientation. Red ticks represent contig boundaries. 
 
-**Warm-up:** open the plot below, pick out the aberrant assemblies, and ask what you can glean — misassemblies, shuffled contig order, orientation flips (especially at contig ends), or genuine structural variation between strains? Keep those questions in mind when you move to the cleaner, single-contig chr14 views in the sections that follow.
+Looking at the plot below, you can see a few aberrant assemblies. What you can glean from the synteny? Misassemblies, shuffled contig order, orientation flips (some corresponding to whole contigs), and potentially structural variation between strains? There are at least three assemblies here that are different; one has a different order and orientation of contigs, and at least two have a merged chromosome (could be a SV join or a misassembly).
 
 <details>
 <summary>Multi-MUM synteny across 22 yeast genomes (<code>figures/yeast_synteny.pdf</code>)</summary>
