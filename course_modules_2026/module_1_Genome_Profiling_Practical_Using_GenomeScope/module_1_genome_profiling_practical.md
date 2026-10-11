@@ -193,7 +193,7 @@ To determine the ploidy of this species, it would be helpful to know if there ar
 
 In this example, a meaningful error threshold would be 10. As a rule of thumb, no dataset should have this threshold much below <10 unless it's a very clean sequencing run (you can separate error and genomic peaks). Furthermore, it is not the end of the world if we lose a bit of the real genomic k-mers (as long as there is enough signal). However these are just some gudances, what is sensible really depends on each individual datasets!
 
-Now we can finally find k-mer pairs by running `smudgeplot.py hetmers`. This command will interanlly call a C-kernel optimised for the searched designed by Gene Myers. We specify `-L 10` (the coverage threshold for genomic k-mers) and use 4 threads (`-t`). The parameter `-o` just specifies the pattern for the output files
+Now we can finally find k-mer pairs by running `smudgeplot hetmers`. This command will interanlly call a C-kernel optimised for the searched designed by Gene Myers. We specify `-L 10` (the coverage threshold for genomic k-mers) and use 4 threads (`-t`). The parameter `-o` just specifies the pattern for the output files
 
 ```
 cd ../../.. # back to the repo root
