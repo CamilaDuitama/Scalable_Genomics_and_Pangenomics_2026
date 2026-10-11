@@ -250,7 +250,7 @@ FastK -k21 -p:Mother Child.Reads.fasta -NChild_Mother
 FastK -k21 -p:Father Child.Reads.fasta -NChild_Father
 ```
 
-If it's still Monday and you got it here already, STOP. Keep the rest for tomorrow.
+If it's still Monday and you got it here already, STOP. Keep Merqury practicals for tomorrow.
 
 ## Merqury.FK
 
@@ -265,6 +265,4 @@ MerquryFK Child.ktab Father.ktab Mother.ktab Hap1.fasta Hap2.fasta merqury/merqu
 ```
 
 Now, all these calculations and plotted histograms are just series of `Logex` expressions passed into simple plotting scripts. Try to go through all the plots (explained in the lecture), and perhaps try to rebuild some of the `Logex` expressions (for instance for k-mer completeness) or even you could try to recreate some of the figures in R. 
-
-## Smudgeplot
 
