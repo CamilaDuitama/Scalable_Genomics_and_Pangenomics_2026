@@ -108,13 +108,13 @@ The `-G` option produces a GenomeScope-ready histogram, meaning that the histogr
     ```bash
     mkdir -p genomescope
     Histex -G Child > genomescope/child.hist.txt
-    genomescope.R -i genomescope/child.hist.txt -o gs_child -n child
+    genomescope2 -i genomescope/child.hist.txt -o gs_child -n child
 
     Histex -G Father > genomescope/Father.hist.txt
-    genomescope.R -i genomescope/Father.hist.txt -o genomescope -n Father
+    genomescope2 -i genomescope/Father.hist.txt -o genomescope -n Father
 
     Histex -G Mother > genomescope/Mother.hist.txt
-    genomescope.R -i genomescope/Mother.hist.txt -o genomescope -n Mother
+    genomescope2 -i genomescope/Mother.hist.txt -o genomescope -n Mother
     ```
 </details>
 
