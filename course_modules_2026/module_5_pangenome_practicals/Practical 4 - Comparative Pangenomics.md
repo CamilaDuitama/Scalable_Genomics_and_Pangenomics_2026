@@ -267,7 +267,7 @@ BK006947.3	18355	18501	mum_71	+
 
 
 
-## 3d) *(Temporary)* MUM coverage and graph compression
+## 3d) MUM coverage and graph compression
 
 > **Cut-able:** this subsection is for discussion / dry-run. Delete it from the shipped practical if you want to keep the main path shorter.
 
@@ -347,7 +347,7 @@ Interpretation: both graphs store **more** sequence than the single longest asse
 
 </details>
 
-**Checkpoint:** Why can the GFA beat the MUM lower bound? Where would you expect the bound to be tight vs loose?
+Why can the GFA beat the MUM lower bound? Where would you expect the bound to be tight vs loose?
 
 
 
@@ -355,7 +355,7 @@ Interpretation: both graphs store **more** sequence than the single longest asse
 
 ## 4) Whole-collection synteny with SVbyEye
 
-Rebuild a multi-genome synteny view from the shipped **pairwise PAFs** under `$ALIGN_DIR` using [SVbyEye](https://github.com/daewoooo/SVbyEye) (`plotAVA`; already in the course image).
+Rebuild a multi-genome synteny view from the shipped **pairwise PAFs** under `$ALIGN_DIR` using [SVbyEye](https://github.com/daewoooo/SVbyEye) (use `plotAVA`, "plot all vs all"). `SVbyEye` is an R library, so we provide some example code to run the visualization library on the PAFs we computed (to build the PGGB graph).
 
 Each chr14 FASTA is a single contig, so the helper only needs a genome order: it loads each consecutive pair’s PAF, renames `q`/`t` to short labels, and calls `plotAVA`. Order comes from `mumemto.lengths` (same as §3). Plot **all 19** genomes (omit `--max-genomes`).
 
@@ -383,32 +383,11 @@ Rscript "$SVBYEYE_R" \
 </details>
 
 <details>
-<summary>Example output (genome_order.txt)</summary>
-
-```bash
-head "$ANALYSIS_DIR/genome_order.txt"
-```
-
-```text
-GCA_000146045.2_R64_genomic
-GCA_003086655.1_ASM308665v1_genomic
-GCA_949124045.1_AGK.nuclear_genome.ScRAP_genomic
-GCA_949124055.1_AEG.nuclear_genome.ScRAP_genomic
-GCA_949124075.1_AFH.nuclear_genome.ScRAP_genomic
-GCA_949124095.1_AIE.nuclear_genome.ScRAP_genomic
-…
-```
-
-</details>
-
-<details>
 <summary>Example output (SVbyEye AVA synteny — all 19)</summary>
 
 ![SVbyEye plotAVA synteny for all 19 chr14 genomes (course dry-run)](figures/p4_svbyeye_synteny.png)
 
 </details>
-
-**Checkpoint:** Open the PDF/PNG. Along chr14, where do the ribbons stay collinear vs pinch or shift between consecutive strains?
 
 **Inputs / Outputs**
 
@@ -427,13 +406,13 @@ Pre-built chr14 graphs:
 
 | Graph                   | Path        | Notes                                                           |
 | ----------------------- | ----------- | --------------------------------------------------------------- |
-| PGGB (laced)            | `$PGGB_GFA` | **P-lines**; path names = contig accessions (e.g. `BK006947.3`) |
-| minigraph-cactus (full) | `$MC_GFA`   | **W-lines**; `RS:Z:R64`; sample `R64` + contig                  |
+| PGGB           | `$PGGB_GFA` | **P-lines**; path names = contig accessions (e.g. `BK006947.3`) |
+| minigraph-cactus (full) | `$MC_GFA`   | **W-lines**; `RS:Z:R64`; reference sample `R64` + contig + position                 |
 
 
-These GFAs are chromosome-scale (~10 MB). Use a large PNG canvas and thick node/edge settings so the layout stays readable when you zoom (default Bandage PNGs look washed out; full SVGs are huge). The example figures below are the **thickened** PNGs (after `p4_thicken_png.py`).
+These GFAs are chromosome-scale (~10 MB). Use a large PNG canvas and thick node/edge settings so the layout stays readable when you zoom (default Bandage PNGs can look washed out; full SVGs are large). The example figures below are the **thickened** PNGs (after running `p4_thicken_png.py`).
 
-**Expect:** each Bandage image ~1–2 min and ~1.2 GB RAM; thicken step ~2 s and ~300 MiB each (dry-run). Bandage may spam `QGraphicsScene::addItem` warnings — safe to ignore if the PNGs are written.
+**Expect:** each Bandage image ~1–2 min and ~1.2 GB RAM. Bandage may spam `QGraphicsScene::addItem` warnings, that's fine to ignore if the PNGs are written.
 
 <details>
 <summary>Show BandageNG commands</summary>
@@ -462,9 +441,8 @@ BANDAGE_OPTS=(
 BandageNG image "${BANDAGE_OPTS[@]}" "$PGGB_GFA" "$ANALYSIS_DIR/pggb.bandage.raw.png"
 BandageNG image "${BANDAGE_OPTS[@]}" "$MC_GFA"   "$ANALYSIS_DIR/mc.bandage.raw.png"
 
-# Light dilate for readability (needs Pillow: python -c 'import PIL').
-# --rounds 1 is a middle ground; raise if still too thin. If Pillow is missing,
-# use the .raw.png files or the shipped example figures.
+# Light dilate for readability.
+# --rounds 1 is a middle ground; raise if still too thin. 
 python3 "$SCRIPTS/p4_thicken_png.py" --rounds 1 \
   -i "$ANALYSIS_DIR/pggb.bandage.raw.png" -o "$ANALYSIS_DIR/pggb.bandage.png"
 python3 "$SCRIPTS/p4_thicken_png.py" --rounds 1 \
@@ -501,15 +479,17 @@ python3 "$SCRIPTS/p4_thicken_png.py" --rounds 1 \
 
 ## 6) *(Optional)* odgi depth + multi-MUM paint
 
-Path-guided [odgi](https://odgi.readthedocs.io/) layouts are often easier to read than Bandage for multi-path graphs: a 1D depth raster plus a 2D drawing with multi-MUM intervals in orange (no text labels).
+Path-guided [odgi](https://odgi.readthedocs.io/) layouts are often easier to read than Bandage for multi-path graphs. The 1D verion shows a linear layout with blocks representing nodes stacked based on alternative paths. The 2D plot is similar to a bandage plot but similarly is linearized. ODGI uses various heuristics to find a suitable linear-like visualization of the graph (which works best for pangenome graphs, as opposed to say an assembly graph). 
 
-**Why only PGGB?** odgi needs **P-lines**. Use `$PGGB_GFA`. The minigraph-cactus GFA is W-lines only — skip it (no conversion).
+In this task, we'll draw a 2D odgi plot and color it with multi-MUMs. To do this, we can use the MUM BED file from earlier, and use odgi to color nodes that correspond to each genomic interval in the BED file orange in the reference path.
 
-`odgi` is not in the course image. Install a temporary micromamba env if you want to try this section (same pattern as ntSynt).
+Here, we'll just use the PGGB graph. odgi needs P-lines. The minigraph-cactus GFA is W-lines only; we could convert them to P-lines (remember, a W-line is a special P-line that represents a haplotype walk), but we will skip that for this session.
+
+Note: `odgi` is not in the course image. To use it, install a temporary conda env if you want to try this section (see below). This involves **re-entering** the course image with a few extra flags (such as `--writable-tmpfs`) to avoid the temporary conda env writing outside the image, staying containerized.
 
 **Vector vs raster:** `odgi viz` writes **PNG only**. For the 2D layout, use `odgi draw -s` to write an **SVG** (zoomable; PNGs look blurry on this graph).
 
-**Expect:** micromamba install ~1 min / ~1.8 GB; `odgi build`+`viz` a few seconds; `odgi layout` ~1.5 min / ~150 MiB; `odgi draw -s` ~7 s / ~70 MiB (dry-run, `-t 4`).
+**Expect:** micromamba install ~1 min; `odgi build`+`viz` a few seconds; `odgi layout` ~1.5 min / ~150 MiB; `odgi draw -s` ~7 s / ~70 MiB.
 
 <details>
 <summary>Show temporary odgi install (Singularity / writable-tmpfs)</summary>
@@ -551,7 +531,7 @@ odgi draw -i "$ANALYSIS_DIR/pggb.og" -c "$ANALYSIS_DIR/pggb.lay" \
   -s "$ANALYSIS_DIR/pggb.mum_paint.svg" -b "$ANALYSIS_DIR/mum_paint.bed" -w 40 -H 1200
 ```
 
-`#FF6600` colours MUM intervals orange without text labels. (Skip the minigraph-cactus GFA here — it has W-lines only.)
+`#FF6600` colours MUM intervals orange without text labels.
 
 </details>
 
@@ -571,17 +551,17 @@ Students produce `$ANALYSIS_DIR/pggb.mum_paint.svg` (`odgi draw -s`). Preview:
 
 </details>
 
-**Checkpoint:** Do high-depth bins line up with orange MUM-painted segments? Where do they disagree?
+**Checkpoint:** Where do the orange MUM-painted segments tend to appear? What's happening in the graph between MUMs?
 
 ---
 
 ## 7) *(Optional)* ntSynt synteny ribbons
 
-[ntSynt](https://github.com/bcgsc/ntSynt) finds synteny blocks across assemblies; [ntSynt-viz](https://github.com/BirolLab/ntSynt-viz) draws ribbon plots. Neither is in the course image — install a **temporary** conda env inside the container (writable tmpfs) so nothing persists outside.
+[ntSynt](https://github.com/bcgsc/ntSynt) finds synteny blocks across assemblies; [ntSynt-viz](https://github.com/BirolLab/ntSynt-viz) draws ribbon plots. Neither is in the course image; install a **temporary** conda env inside the container (writable tmpfs) so nothing persists outside.
 
-You need the chr14 FASTAs under `$FASTA_DIR` (from §2). `samtools` **is** in the course image (use it for `faidx`).
+You need the chr14 FASTAs under `$FASTA_DIR` (from §2). `samtools` is already in the course image (use it for `faidx`).
 
-**Expect:** micromamba install ~2 min / ~2.5 GB; `ntSynt` ~45 s / ~160 MiB; `ntsynt_viz` ~35 s / ~480 MiB (dry-run, all 19 FASTAs).
+**Expect:** micromamba install ~2 min; `ntSynt` ~45 s / ~160 MiB; `ntsynt_viz` ~35 s / ~480 MiB (all 19 FASTAs).
 
 <details>
 <summary>Show ntSynt + ntsynt-viz commands</summary>
@@ -605,7 +585,7 @@ cd "$ANALYSIS_DIR/ntsynt"
 micromamba run -p /tmp/ntsynt ntSynt -d 0.1 -p chr14 "$FASTA_DIR"/*.fa
 
 # Use chr14.synteny_blocks.tsv (8 columns, includes a trailing reason field).
-# Do NOT use chr14.pre-collinear-merge.synteny_blocks.tsv — ntsynt-viz expects the reason column.
+
 for f in "$FASTA_DIR"/*.fa; do samtools faidx "$f"; done
 ls "$FASTA_DIR"/*.fa.fai > fais.list
 BLOCKS=chr14.synteny_blocks.tsv
@@ -675,16 +655,13 @@ You can also convert a GFA into synteny blocks for the same visualiser — see t
 ## Notes
 
 - BandageNG is in the course image; use thick node/edge PNG settings + `p4_thicken_png.py` (§5). Example figures are the thickened PNGs.
-- odgi and ntSynt are optional temp-env installs. `samtools` is in the course image (use it for §7 `faidx`).
-- odgi needs **P-lines** → PGGB laced GFA only; minigraph-cactus is W-lines and is skipped (no conversion).
+- odgi and ntSynt involve optional temp-env installs.
 - `odgi viz` is PNG-only; use `odgi draw -s` for vector MUM-paint output.
 - Mumemto BED export needs `-v` on the course mumemto build when collinear blocks are absent (yeast chr14 dry-run).
 - Ship path for the AGC: `$DATA/yeast_chr14.agc` (19 samples; R64 reference).
-- For §7, pass `chr14.synteny_blocks.tsv` (not the `pre-collinear-merge` file) to `ntsynt_viz.py`.
-
 ---
 
-## Approximate student-step timings (dry-run)
+## Approximate timings
 
 Wall time / peak RSS from `/usr/bin/time -v` on Apple Silicon via Docker `linux/amd64` (`npmalfoy/scalable:2026`). Round up on slower machines.
 
@@ -706,12 +683,9 @@ Wall time / peak RSS from `/usr/bin/time -v` on Apple Silicon via Docker `linux/
 | §7 `ntSynt` (19 FASTAs)  | ~45 s      | ~160 MiB | optional                              |
 | §7 `ntsynt_viz`          | ~35 s      | ~480 MiB | ribbon PNG + HTML                     |
 
-
-Core practical (§2–5) is roughly **4–5 minutes** wall time once the image is pulled. Optional §6–7 add ~5–7 minutes including conda installs.
-
 ---
 
-## N.B. — how long the shipped files took to build
+## N.B. how long the shipped files took to build
 
 Approximate wall times / peak RSS to produce this **yeast chrXIV** bundle (19 haplotypes). You do **not** need to rerun these for the practical — they are already in `yeast_chr14.tar.gz`.
 
