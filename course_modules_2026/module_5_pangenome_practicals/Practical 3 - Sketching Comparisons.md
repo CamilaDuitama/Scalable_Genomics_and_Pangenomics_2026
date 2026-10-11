@@ -30,13 +30,12 @@ In this practical you will:
 
 ## 0) Pull the docker container and datasets
 
-Download `yeast_chr14.tar.gz` from the course [FTP directory](https://ftp.ebi.ac.uk/pub/databases/metagenomics/research-team/shivakumar/scalable_course/), unpack it, then start an interactive session with the working directory mounted at `/course`. If the download fails, ask a TA for the tarball, or reuse the extract from Practical 4 (`data/comp_pan/yeast_chr14/`).
+Download `yeast_chr14.tar.gz` from the course [FTP directory](https://ftp.ebi.ac.uk/pub/databases/metagenomics/research-team/shivakumar/scalable_course/), unpack it, then start an interactive session with the working directory mounted at `/course`. If the download fails, ask a TA for the tarball, or reuse the extract from Practical 4 (`yeast_chr14/`).
 
 ```bash
-# from your course working directory (the one you will mount at /course)
-mkdir -p data/comp_pan
-tar -xzf yeast_chr14.tar.gz -C data/comp_pan
-ls data/comp_pan/yeast_chr14
+# from a clean working directory (the one you will mount at /course)
+tar -xzf yeast_chr14.tar.gz
+ls yeast_chr14
 ```
 
 ```bash
@@ -67,8 +66,8 @@ dashing2 sketch -h | head
 **Expect:** a few seconds; ~35 MiB RAM.
 
 ```bash
-DATA=/course/data/comp_pan/yeast_chr14   # adjust if you unpacked elsewhere
-OUT=/course/data/work/sketching
+DATA=/course/yeast_chr14
+OUT=/course/work/sketching
 AGC=$DATA/yeast_chr14.agc
 FASTA_DIR=$OUT/fastas
 SHORT=$OUT/fastas_short

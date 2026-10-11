@@ -19,7 +19,7 @@ We will explore different ways to underlying multiple alignment and pangenome sy
 In this practical you will:
 
 1. Decompress the chr14 assemblies from the shipped AGC archive
-2. Visualise multi-MUM synteny and compute multi-MUM coverage on R64 chr14
+2. Compute multi-MUMs, visualise synteny, and report multi-MUM coverage on R64 chr14
 3. Build a multi-genome synteny plot with SVbyEye from pairwise PAFs
 4. Render the PGGB and minigraph-cactus chr14 graphs with BandageNG
 5. *(Optional)* Use odgi to paint multi-MUM intervals on the PGGB graph
@@ -46,15 +46,14 @@ Looking at the plot below, you can see a few aberrant assemblies. What you can g
 
 ## 0) Pull the docker container and datasets
 
-See the course informatics guide for full setup instructions. Download `yeast_chr14.tar.gz` from the course [FTP directory](https://ftp.ebi.ac.uk/pub/databases/metagenomics/research-team/shivakumar/scalable_course/), unpack it, then start an interactive session with the working directory mounted at `/course`.
+See the course informatics guide for full setup instructions. Start in a clean working directory, download `yeast_chr14.tar.gz` from the course [FTP directory](https://ftp.ebi.ac.uk/pub/databases/metagenomics/research-team/shivakumar/scalable_course/), unpack it, then start an interactive session with that directory mounted at `/course`.
 
 **Unpack the data bundle** (creates a `yeast_chr14/` folder with the AGC, alignments, mumemto index, and GFAs — no FASTAs; those come from the AGC in §2):
 
 ```bash
-# from your course working directory (the one you will mount at /course)
-mkdir -p data/comp_pan
-tar -xzf yeast_chr14.tar.gz -C data/comp_pan
-ls data/comp_pan/yeast_chr14
+# from a clean working directory (the one you will mount at /course)
+tar -xzf yeast_chr14.tar.gz
+ls yeast_chr14
 ```
 
 **Docker:**
@@ -75,19 +74,19 @@ apptainer shell \
   scalable.sif
 ```
 
-> Use `singularity` in place of `apptainer` if that is what your cluster provides. On Apple Silicon (or other arm64 hosts), keep `--platform linux/amd64` for Docker.
+> Use `singularity` in place of `apptainer` if that is what your cluster provides. On Apple Silicon (or other arm64 hosts), keep `--platform linux/amd64` for Docker. Keep the image entrypoint (do not override with bare `bash -lc`); that is what puts the course tools on `PATH`.
 
 ### Input layout
 
-After unpacking, `$DATA` should look like:
+After unpacking and the §1 path setup, `$DATA` should look like:
 
 ```text
-$DATA/   # e.g. /course/data/comp_pan/yeast_chr14
+$DATA/   # /course/yeast_chr14
   yeast_chr14.agc              # 19 chr14 assemblies (decompress in §2)
   alignments/                  # pairwise *.paf (171 files)
-  mumemto/
+  mumemto/                     # shipped multi-MUM index (you recompute in §3)
     mumemto.bumbl
-    mumemto.bumbl.bi           # shredtools index (used in Practical 2)
+    mumemto.bumbl.bi           # shredtools index (not needed here)
     mumemto.lengths
   pggb/
     chr14_yeast.laced.gfa      # PGGB laced graph (P-lines)
@@ -95,7 +94,7 @@ $DATA/   # e.g. /course/data/comp_pan/yeast_chr14
     chr14_yeast.full.gfa       # minigraph-cactus full graph (W-lines; RS:Z:R64)
 ```
 
-Writable analysis outputs go under `$OUT` (e.g. `/course/data/work/comparative`). FASTAs from the AGC go under `$FASTA_DIR`.
+Writable analysis outputs go under `$OUT` (`/course/work`). FASTAs from the AGC go under `$FASTA_DIR`.
 
 To test that the core tools are available:
 
@@ -109,8 +108,8 @@ Rscript -e 'stopifnot(requireNamespace("SVbyEye", quietly=TRUE)); cat(as.charact
 ## 1) Setup — paths
 
 ```bash
-DATA=/course/data/comp_pan/yeast_chr14   # adjust to where you unpacked the bundle
-OUT=/course/data/work/comparative
+DATA=/course/yeast_chr14
+OUT=/course/work
 ANALYSIS_DIR=$OUT
 
 AGC=$DATA/yeast_chr14.agc
@@ -124,7 +123,7 @@ REF_FA=$FASTA_DIR/GCA_000146045.2_R64_genomic.fa
 REF_MUM_IDX=0                    # first assembly in mumemto.lengths (= R64)
 REF_CONTIG=BK006947.3            # R64 chrXIV
 
-mkdir -p "$OUT" "$ANALYSIS_DIR" "$FASTA_DIR"
+mkdir -p "$OUT" "$FASTA_DIR"
 
 ls "$AGC" "$MUM_DIR" "$PGGB_GFA" "$MC_GFA"
 ls "$ALIGN_DIR"/*.paf | wc -l    # expect 171
@@ -167,11 +166,29 @@ ls "$FASTA_DIR" | head
 
 ## 3) Multi-MUM overview (mumemto)
 
-We've computed multi-MUMs across the 19 chr14 sequences. For useful downstream analysis, multi-MUM coverage is often >50% on the reference; lower coverage usually means more dissimilar assemblies or high repeat content.
+Multi-MUMs across the 19 chr14 sequences. For useful downstream analysis, multi-MUM coverage is often >50% on the reference; lower coverage usually means more dissimilar assemblies or high repeat content.
+
+A mumemto index is shipped under `$MUM_DIR`, but this collection is small enough to recompute on the fly. Move the shipped files aside (keep them if you want to restore later), then run mumemto with the same output prefix:
+
+**Expect:** ~6 s; ~160 MiB RAM.
+
+<details>
+<summary>Show mumemto compute command</summary>
+
+```bash
+mv "$MUM_DIR" "$DATA/mumemto.shipped"
+mkdir -p "$MUM_DIR"
+mumemto -o "$MUM_DIR/mumemto" -b "$FASTA_DIR"/*.fa
+
+# restore shipped later with:
+#   rm -rf "$MUM_DIR" && mv "$DATA/mumemto.shipped" "$MUM_DIR"
+```
+
+</details>
 
 ### 3a) Quick synteny viz
 
-`-i` is an **input prefix** (`…/mumemto` → `mumemto.bumbl` + `mumemto.lengths`), not a path to the `.bumbl` alone.
+`-i` is an **input prefix** (`…/mumemto` → `mumemto.bumbl` + `mumemto.lengths`), not a path to the `.bumbl` alone. Default viz mode is `normal` (`--mode normal`).
 
 **Expect:** ~1–2 s; ~120 MiB RAM.
 
@@ -179,54 +196,54 @@ We've computed multi-MUMs across the 19 chr14 sequences. For useful downstream a
 <summary>Show mumemto viz command</summary>
 
 ```bash
-mumemto viz -o "$ANALYSIS_DIR/mumemto.pdf" -i "$MUM_DIR/mumemto" --mode gapped
+mumemto viz -o "$ANALYSIS_DIR/mumemto.pdf" -i "$MUM_DIR/mumemto"
 ```
 
 </details>
 
 <details>
-<summary>Example output (multi-MUM gapped synteny)</summary>
+<summary>Example output (multi-MUM synteny)</summary>
 
-![Multi-MUM gapped synteny across 19 yeast chr14 assemblies (course dry-run)](figures/p4_mumemto_gapped.png)
+![Multi-MUM synteny across 19 yeast chr14 assemblies (course dry-run)](figures/p4_mumemto.png)
 
 </details>
-
-> These chr14 FASTAs are single-contig each, so gapped mode should keep a clean per-assembly layout. If contig counts differ, mumemto may fall back to delineated mode.
 
 **Checkpoint:** Open the PDF. How collinear is chr14 across strains? Where does synteny look messy?
 
 ### 3b) Multi-MUM coverage on R64
 
-Coverage for sequence index `0` (R64). The percentage line is written to **stderr** — redirect with `2>&1`.
+Coverage for sequence index `0` (R64).
 
 **Expect:** ~2 s; ~220 MiB RAM.
 
+<details>
+<summary>Show mumemto coverage command</summary>
+
 ```bash
-mumemto coverage -i "$MUM_DIR/mumemto" -s "$REF_MUM_IDX" 2>&1 | tee "$ANALYSIS_DIR/mumemto_coverage.txt"
-# dry-run: seq0: 81.814%
+mumemto coverage -i "$MUM_DIR/mumemto" -s "$REF_MUM_IDX"
 ```
 
-<details>
-<summary>Example output (mumemto_coverage.txt)</summary>
-
-```text
-seq0: 81.814%
+```bash
+seq0: 81.823%
 ```
 
 </details>
 
 ### 3c) Multi-MUM intervals as BED
 
-Export MUM intervals on R64 for later colouring. Pass the **`.bumbl`** (path must end in `.bumbl` or `.mums`) and the lengths file. Use **`-v`** with this mumemto build when there are no collinear blocks (otherwise the BED can be empty). Default **`-L 100`** keeps MUMs ≥ 100 bp:
+Export MUM intervals on R64 for later colouring. Pass the **`.bumbl`** (path must end in `.bumbl` or `.mums`) and the lengths file. Use **`-v`** with this mumemto build when there are no collinear blocks (otherwise the BED can be empty). Default **`-L 100`** keeps MUMs ≥ 100 bp.
 
-**Expect:** <1 s; ~60 MiB RAM. Dry-run BED: **1970** intervals.
+`mumemto bed` may print many repeated warnings about no collinear blocks — that is fine (redirect with `2>/dev/null` if the spam is annoying).
+
+**Expect:** <1 s; ~60 MiB RAM. Dry-run BED: **1970** intervals. Rows are not sorted by coordinate; `mum_*` IDs can differ slightly across runs.
 
 ```bash
 mumemto bed -v \
   -s "$REF_MUM_IDX" \
   -l "$MUM_DIR/mumemto.lengths" \
   -o "$ANALYSIS_DIR/r64_multimum.bed" \
-  "$MUM_DIR/mumemto.bumbl"
+  "$MUM_DIR/mumemto.bumbl" \
+  2>/dev/null
 
 wc -l "$ANALYSIS_DIR/r64_multimum.bed"
 head -5 "$ANALYSIS_DIR/r64_multimum.bed"
@@ -242,11 +259,11 @@ head -5 "$ANALYSIS_DIR/r64_multimum.bed"
 
 ```text
 1970 …/r64_multimum.bed
-BK006947.3	15779	15892	mum_26	+
-BK006947.3	17924	18045	mum_67	+
-BK006947.3	18055	18179	mum_68	+
-BK006947.3	18180	18305	mum_69	+
-BK006947.3	18355	18501	mum_71	+
+BK006947.3	483237	483354	mum_1	+
+BK006947.3	281886	282027	mum_6	+
+BK006947.3	196374	196487	mum_8	+
+BK006947.3	609580	610097	mum_9	+
+BK006947.3	375144	375255	mum_19	+
 ```
 
 </details>
@@ -258,8 +275,8 @@ BK006947.3	18355	18501	mum_71	+
 
 | Inputs                          | Outputs                              |
 | ------------------------------- | ------------------------------------ |
+| `$FASTA_DIR/*.fa`               | `$MUM_DIR/mumemto.bumbl` (+ `.lengths`) |
 | `$MUM_DIR/mumemto` (+ `.bumbl`) | `$ANALYSIS_DIR/mumemto.pdf`          |
-| same                            | `$ANALYSIS_DIR/mumemto_coverage.txt` |
 | `.bumbl` + `.lengths`           | `$ANALYSIS_DIR/r64_multimum.bed`     |
 
 
@@ -269,81 +286,39 @@ BK006947.3	18355	18501	mum_71	+
 
 ## 3d) MUM coverage and graph compression
 
-> **Cut-able:** this subsection is for discussion / dry-run. Delete it from the shipped practical if you want to keep the main path shorter.
-
 Multi-MUM coverage tells you how much of each assembly is “shared exact sequence” that a pangenome *could* store once. Graphs go further (they also collapse near-identical and branching structure), so GFA sequence totals are usually **smaller** than a naive MUM-only lower bound.
 
-**Expect:** a few seconds; <0.5 GB RAM.
+Pull a few sequence totals, then think through how you would use multi-MUM coverage and the graph sizes together:
 
 <details>
-<summary>Show compression commands</summary>
+<summary>Show sequence-size commands</summary>
 
 ```bash
-# Total sequence across all assemblies + per-FASTA lengths
-TOTAL=$(awk 'BEGIN{n=0} /^>/ {next} {n+=length($0)} END{print n}' "$FASTA_DIR"/*.fa)
-LREF=$(awk 'BEGIN{n=0} /^>/ {next} {n+=length($0)} END{print n}' "$REF_FA")
+# total sequence across all assemblies
+awk 'BEGIN{n=0} /^>/ {next} {n+=length($0)} END{print n}' "$FASTA_DIR"/*.fa
 
-# GFA stored sequence = sum of lengths of S-line sequence fields
-PGGB_S=$(awk -F'\t' '$1=="S"{s+=length($3)} END{print s+0}' "$PGGB_GFA")
-MC_S=$(awk -F'\t' '$1=="S"{s+=length($3)} END{print s+0}' "$MC_GFA")
+# R64 reference length
+awk 'BEGIN{n=0} /^>/ {next} {n+=length($0)} END{print n}' "$REF_FA"
 
-# Multi-MUM coverage fraction on R64 (stderr → capture)
-C=$(mumemto coverage -i "$MUM_DIR/mumemto" -s "$REF_MUM_IDX" 2>&1 \
-      | awk -F'[: %]+' '/seq/{print $2/100}')
-
-# Lower bound: keep ONE copy of MUM sequence (≈ C × L_ref) and store ALL
-# inter-MUM regions uncollapsed for every genome:
-#   lower_bound = C*L_ref + Σ_i max(L_i − C*L_ref, 0)
-python3 - "$FASTA_DIR" "$TOTAL" "$LREF" "$C" "$PGGB_S" "$MC_S" <<'PY'
-import pathlib, sys
-fasta_dir, total, lref, c, pggb, mc = sys.argv[1:7]
-total, lref, c = int(total), int(lref), float(c)
-pggb, mc = int(pggb), int(mc)
-lens = []
-for f in sorted(pathlib.Path(fasta_dir).glob("*.fa")):
-    n = 0
-    for line in open(f):
-        if line.startswith(">"):
-            continue
-        n += len(line.strip())
-    lens.append((n, f.name))
-longest = max(lens)[0]
-shared = c * lref
-lb = shared + sum(max(L - shared, 0) for L, _ in lens)
-print(f"total_fasta_bp\t{total}")
-print(f"longest_assembly_bp\t{longest}\t{max(lens)[1]}")
-print(f"L_ref_bp\t{lref}")
-print(f"mum_coverage_C\t{c}")
-print(f"shared_mum_once_bp\t{shared:.0f}")
-print(f"lower_bound_bp\t{lb:.0f}")
-print(f"pggb_S_bp\t{pggb}")
-print(f"mc_S_bp\t{mc}")
-print(f"compress_fasta_vs_pggb\t{total/pggb:.3f}x")
-print(f"compress_fasta_vs_mc\t{total/mc:.3f}x")
-print(f"compress_fasta_vs_lower_bound\t{total/lb:.3f}x")
-print(f"pggb_S_vs_longest\t{pggb/longest:.3f}x")
-print(f"mc_S_vs_longest\t{mc/longest:.3f}x")
-PY
+# GFA stored sequence = sum of S-line sequence fields
+awk -F'\t' '$1=="S"{s+=length($3)} END{print s+0}' "$PGGB_GFA"
+awk -F'\t' '$1=="S"{s+=length($3)} END{print s+0}' "$MC_GFA"
 ```
 
 </details>
 
 <details>
-<summary>Example output (dry-run numbers)</summary>
+<summary>Rough numbers</summary>
 
 ```text
-total_fasta_bp                  14,930,447
-longest_assembly_bp               828,344   (ACH)
-L_ref_bp (R64)                    784,333
-mum_coverage_C (R64)               0.81814   → shared MUM once ≈ 641,694 bp
-lower_bound_bp                  3,379,951   (≈ 4.42× vs total FASTA)
-pggb_S_bp                       1,131,929   (≈ 13.19× vs total FASTA; 1.37× longest)
-mc_S_bp                         1,177,292   (≈ 12.68× vs total FASTA; 1.42× longest)
+Total FASTA sequence                 14,930,447 bp
+Longest assembly (ACH)                  828,344 bp
+R64 reference length                    784,333 bp
+Multi-MUM coverage (R64)                 81.823%  → shared MUM once ≈ 641,800 bp
+MUM-only lower bound                  3,379,951 bp  (≈ 4.4× vs total FASTA)
+PGGB graph sequence                   1,131,929 bp  (≈ 13.2× vs total FASTA; 1.37× longest)
+minigraph-cactus graph sequence       1,177,292 bp  (≈ 12.7× vs total FASTA; 1.42× longest)
 ```
-
-Interpretation: both graphs store **more** sequence than the single longest assembly, but **far less** than 19× chr14. The MUM-only lower bound (~3.4 Mb) is still ~3× larger than the GFA S totals — graphs collapse more than exact multi-MUMs alone.
-
-> Note: the §3c BED (`-L 100`) covers only ~42.5% of R64; §3b coverage (all MUMs) is the right input for this bound.
 
 </details>
 
@@ -365,8 +340,8 @@ Each chr14 FASTA is a single contig, so the helper only needs a genome order: it
 <summary>Show SVbyEye commands</summary>
 
 ```bash
-SVBYEYE_R=/course/course_modules_2026/module_5_pangenome_practicals/scripts/p4_svbyeye.R
-# or relative to this practical folder: scripts/p4_svbyeye.R
+wget -q -O "$ANALYSIS_DIR/p4_svbyeye.R" \
+  https://raw.githubusercontent.com/WCSCourses/Scalable_Genomics_and_Pangenomics_2026/main/course_modules_2026/module_5_pangenome_practicals/scripts/p4_svbyeye.R
 
 # genome stems in mumemto order (* lines → basename without .fa)
 awk '/ \* /{ n=$1; sub(/^.*\//,"",n); sub(/\.fa$/,"",n); print n }' \
@@ -374,7 +349,7 @@ awk '/ \* /{ n=$1; sub(/^.*\//,"",n); sub(/\.fa$/,"",n); print n }' \
 wc -l "$ANALYSIS_DIR/genome_order.txt"   # expect 19
 head "$ANALYSIS_DIR/genome_order.txt"
 
-Rscript "$SVBYEYE_R" \
+Rscript "$ANALYSIS_DIR/p4_svbyeye.R" \
   --paf-dir "$ALIGN_DIR" \
   --order "$ANALYSIS_DIR/genome_order.txt" \
   --out "$ANALYSIS_DIR/svbyeye_synteny.pdf"
@@ -418,7 +393,8 @@ These GFAs are chromosome-scale (~10 MB). Use a large PNG canvas and thick node/
 <summary>Show BandageNG commands</summary>
 
 ```bash
-SCRIPTS=/course/course_modules_2026/module_5_pangenome_practicals/scripts
+wget -q -O "$ANALYSIS_DIR/p4_thicken_png.py" \
+  https://raw.githubusercontent.com/WCSCourses/Scalable_Genomics_and_Pangenomics_2026/main/course_modules_2026/module_5_pangenome_practicals/scripts/p4_thicken_png.py
 
 # Thick Bandage settings + mid-size PNG (not SVG). Layouts still sprawl, so we
 # dilate strokes afterward for readability.
@@ -442,10 +418,10 @@ BandageNG image "${BANDAGE_OPTS[@]}" "$PGGB_GFA" "$ANALYSIS_DIR/pggb.bandage.raw
 BandageNG image "${BANDAGE_OPTS[@]}" "$MC_GFA"   "$ANALYSIS_DIR/mc.bandage.raw.png"
 
 # Light dilate for readability.
-# --rounds 1 is a middle ground; raise if still too thin. 
-python3 "$SCRIPTS/p4_thicken_png.py" --rounds 1 \
+# --rounds 1 is a middle ground; raise if still too thin.
+python3 "$ANALYSIS_DIR/p4_thicken_png.py" --rounds 1 \
   -i "$ANALYSIS_DIR/pggb.bandage.raw.png" -o "$ANALYSIS_DIR/pggb.bandage.png"
-python3 "$SCRIPTS/p4_thicken_png.py" --rounds 1 \
+python3 "$ANALYSIS_DIR/p4_thicken_png.py" --rounds 1 \
   -i "$ANALYSIS_DIR/mc.bandage.raw.png" -o "$ANALYSIS_DIR/mc.bandage.png"
 ```
 
@@ -642,7 +618,7 @@ You can also convert a GFA into synteny blocks for the same visualiser — see t
 | Stage                 | Inputs                          | Outputs                          |
 | --------------------- | ------------------------------- | -------------------------------- |
 | AGC                   | `$AGC`                          | `$FASTA_DIR/*.fa`                |
-| Mumemto               | `$DATA/mumemto/*`               | synteny PDF; R64 coverage / BED  |
+| Mumemto               | `$FASTA_DIR/*.fa`               | `$MUM_DIR/*`; synteny PDF; R64 BED |
 | SVbyEye               | `$DATA/alignments/*.paf`        | AVA synteny PDF/PNG (19 genomes) |
 | BandageNG             | PGGB + MC GFAs                  | thickened topology PNGs          |
 | *(Opt.)* odgi         | PGGB GFA + MUM BED              | depth PNG + MUM-paint **SVG**    |
@@ -656,7 +632,7 @@ You can also convert a GFA into synteny blocks for the same visualiser — see t
 - BandageNG is in the course image; use thick node/edge PNG settings + `p4_thicken_png.py` (§5). Example figures are the thickened PNGs.
 - odgi and ntSynt involve optional temp-env installs.
 - `odgi viz` is PNG-only; use `odgi draw -s` for vector MUM-paint output.
-- Mumemto BED export needs `-v` on the course mumemto build when collinear blocks are absent (yeast chr14 dry-run).
+- Mumemto BED export needs `-v` on the course mumemto build when collinear blocks are absent (yeast chr14 dry-run). Repeated “no collinear blocks” warnings from `mumemto bed` are fine.
 - Ship path for the AGC: `$DATA/yeast_chr14.agc` (19 samples; R64 reference).
 ---
 
@@ -668,12 +644,13 @@ Wall time / peak RSS from `/usr/bin/time -v` on Apple Silicon via Docker `linux/
 | Step                     | Wall time  | Peak RAM | Notes                                 |
 | ------------------------ | ---------- | -------- | ------------------------------------- |
 | §2 `agc getcol`          | <1 s       | ~35 MiB  | 19 FASTAs                             |
-| §3a `mumemto viz`        | ~1–2 s     | ~120 MiB | gapped PDF                            |
-| §3b `mumemto coverage`   | ~2 s       | ~220 MiB | `seq0: 81.814%`                       |
+| §3 `mumemto` (compute)   | ~6 s       | ~160 MiB | live recompute; shipped copy optional |
+| §3a `mumemto viz`        | ~1–2 s     | ~120 MiB | default (`normal`) PDF                |
+| §3b `mumemto coverage`   | ~2 s       | ~220 MiB | `seq0: 81.823%`                       |
 | §3c `mumemto bed -v`     | <1 s       | ~60 MiB  | 1970 intervals (`-L 100`)             |
-| §3d compression stats    | a few s    | <0.5 GB  | temporary / cut-able                  |
-| §4 SVbyEye (19 genomes)  | ~18 s      | ~1.0 GiB | PDF + PNG                             |
-| §5 BandageNG PGGB        | ~1.5–2 min | ~1.2 GiB | then thicken ~2 s / 300 MiB           |
+| §3d sequence sizes       | <1 s       | small    | awk totals                            |
+| §4 SVbyEye (19 genomes)  | ~10–18 s   | ~1.0 GiB | PDF + PNG                             |
+| §5 BandageNG PGGB        | ~1–2 min   | ~1.2 GiB | then thicken ~2 s / 300 MiB           |
 | §5 BandageNG MC          | ~1–1.5 min | ~1.2 GiB | then thicken ~2 s / 300 MiB           |
 | §6 odgi install (temp)   | ~1 min     | ~1.8 GiB | optional                              |
 | §6 `odgi layout`         | ~1.5 min   | ~150 MiB | dominates odgi; build/viz are seconds |
@@ -686,14 +663,14 @@ Wall time / peak RSS from `/usr/bin/time -v` on Apple Silicon via Docker `linux/
 
 ## N.B. how long the shipped files took to build
 
-Approximate wall times / peak RSS to produce this **yeast chrXIV** bundle (19 haplotypes). You do **not** need to rerun these for the practical — they are already in `yeast_chr14.tar.gz`.
+Approximate wall times / peak RSS to produce this **yeast chrXIV** bundle (19 haplotypes). Alignments and graphs are already in `yeast_chr14.tar.gz`; you recompute mumemto in §3 (a shipped copy is still in the tarball if you need it).
 
 
 | Shipped product                         | How it was built                     | Wall time | Peak RAM | Notes                      |
 | --------------------------------------- | ------------------------------------ | --------- | -------- | -------------------------- |
 | `alignments/*.paf` (171 pairs)          | wfmash all-pairs                     | 2m 24s    | 406 MiB  | 171 × 8 CPU                |
 | `pggb/chr14_yeast.laced.gfa`            | impg partition → pggb windows → lace | ~1m       | 739 MiB  | after alignments were done |
-| `mumemto/*`                             | mumemto (+ shredtools index)         | 36s       | 193 MiB  |                            |
+| `mumemto/*`                             | mumemto (+ shredtools index)         | ~6 s      | ~160 MiB | recomputed live in §3      |
 | `minigraph_cactus/chr14_yeast.full.gfa` | minigraph-cactus                     | 8m 12s    | 7.2 GiB  | 16 CPU                     |
 
 
