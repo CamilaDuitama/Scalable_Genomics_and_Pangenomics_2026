@@ -18,7 +18,7 @@ In this workshop, we will use FastK mostly because it is very fast as well as co
 
 ### building the first k-mer spectrum using FastK
 
-Either download the dataset, or use the pre-downloaded dataset in the gitpod.
+Download the dataset:
 
 ```
 mkdir -p data/Scer && wget -P data/Scer https://sk13.cog.sanger.ac.uk/SRR3265401_{1,2}.fastq.gz
@@ -62,7 +62,7 @@ You should see two column tab-delimited file. The first column is the coverage, 
 Now that we know how to build histograms, let's try to interpret them and extract as much information about our genomes as we can from them Try to load the k-mer histogram and plot it in **R**.
 
 ```
-kmer_hist <- read.table('data/Scer/SRR3265401_k21.hist', col.names = c('cov', 'freq'))
+kmer_hist <- read.table('data/Scer/SRR3265401_k31.hist', col.names = c('cov', 'freq'))
 plot(kmer_hist$cov, kmer_hist$freq, type = 'l', xlab = 'Coverage', ylab = 'Frequency', main = 'Naive plot')
 ```
 
@@ -103,14 +103,14 @@ Let's start with a simple spectrum before analysing the one we visualised before
 ```bash
 # assuming you downloaded and work in the Scalable_Genomics_and_Pangenomics directory
 cd course_data_2026/histograms/homozygous_diploid
-genomescope.R -i Timema_monikensis_k21.hist -o . -n timema -k 21
+genomescope2 -i Timema_monikensis_k21.hist -o . -n timema -k 21
 ```
 
 This is a simple fit, with default parameters the model converge to a genome size that is in the right ballpark (a bit over 1Gbp) and the species is predicted to be homozygous. This is what we excpect when things are easy.
 
 ## Fitting more models
 
-The directory `course_data_2026/histograms` contains several k-mer spectra. Try to fit them one by one and make sense out of the fits. Many of the fits will require non-default parameters, you can look at the GenomeScope help (`GenomeScope.R --help`) and try to figure out how to do it, underneath there is a walkthrough with explanations.
+The directory `course_data_2026/histograms` contains several k-mer spectra. Try to fit them one by one and make sense out of the fits. Many of the fits will require non-default parameters, you can look at the GenomeScope help (`genomescope2 --help`) and try to figure out how to do it, underneath there is a walkthrough with explanations.
 
 The recommended order is begonia, strawberry, human, and toad.
 
@@ -124,8 +124,8 @@ You can try also a more heterozygous organism, such as begonia (`begonia_simple_
 This one converges well with the default
 
 ```bash
-cd course_data_2026/histograms/begonia_simple_heterozygous_diploid 
-genomescope.R -i Begonia_luxurians_k21.hist -o . -n begonia -k 21
+cd ../begonia_simple_heterozygous_diploid
+genomescope2 -i Begonia_luxurians_k21.hist -o . -n begonia -k 21
 ```
 
 </details>
@@ -140,9 +140,9 @@ Try to fit a strawberry k-mer spectrum now (`course_data_2026/histograms/converg
 The default run converges to a heterozygous and by far too small genome. If you know about strawberries, both those will be already suspicious, but there is more to it - there is clearly one peak that is 1/2 of the coverage of the first peak included in the model. This is strongly suggesting it is part of the same genome and therefore should be part of the model. Seems the 1n coverage was estimated to be 2x as high as it should have been. You can give GenomeScope prior on coverage using parameter `-l`.
 
 ```bash
-cd course_data_2026/histograms/convergence_problem
-genomescope.R -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria # does not converge well
-genomescope.R -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria_fixed -l 140 # yep, this is it
+cd ../convergence_problem
+genomescope2 -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria # does not converge well
+genomescope2 -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria_fixed -l 140 # yep, this is it
 ```
 
 </details>
@@ -152,8 +152,8 @@ genomescope.R -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria_fixed -l 
 Another simple case is the Human genome. This is specficially one of the sequencing runs of H002, which is a male sample. Try to fit the model to it (`course_data_2026/histograms/human`).
 
 ```bash
-cd course_data_2026/histograms/human
-genomescope.R -i m84005_220919_232112_s2.hifi_reads.bam.21.kmc.nozero.hist -o . -n hsap -k 21
+cd ../human
+genomescope2 -i m84005_220919_232112_s2.hifi_reads.bam.21.kmc.nozero.hist -o . -n hsap -k 21
 ```
 
 what do you see? Do you trust the genome size / heterozygosity estimates? What could possibly be throwing them off?
@@ -163,7 +163,7 @@ what do you see? Do you trust the genome size / heterozygosity estimates? What c
 The toad dataset 
 
 ```bash
-cd course_data_2026/histograms/toad_very_large_genome
+cd ../toad_very_large_genome
 ```
 The two k-mer histograms in this directory are corresponding to a k-mer histogram build with def
 ault parameters of kmc (`bombina_naive_kmc_k21.hist`), which don't count coverage over 10,000x and all k-mers with the coverage higher are simply reported as 10,000x k-mers. And a histogram with all the k-mers counted (`bombina_sp_k21.hist`).
@@ -172,13 +172,13 @@ ault parameters of kmc (`bombina_naive_kmc_k21.hist`), which don't count coverag
   <summary>What do you think would be the consequences of fitting models to one or the other for the gneome size estimation?</summary>
 
 ```
-genomescope.R -i bombina_naive_kmc_k21.hist -o . -n naive
+genomescope2 -i bombina_naive_kmc_k21.hist -o . -n naive
 ```
 
 Hmmm, the model looks quite alright, but the genome is much smaller than what one would expect for a firebelly toad. Try to fit the same model to a histogram with all the k-mers counted (`bombina_sp_k21.hist`).
 
 ```
-genomescope.R -i bombina_sp_k21.hist -o . -n kmc_full
+genomescope2 -i bombina_sp_k21.hist -o . -n kmc_full
 ```
 
 </details>
@@ -193,9 +193,10 @@ To determine the ploidy of this species, it would be helpful to know if there ar
 
 In this example, a meaningful error threshold would be 10. As a rule of thumb, no dataset should have this threshold much below <10 unless it's a very clean sequencing run (you can separate error and genomic peaks). Furthermore, it is not the end of the world if we lose a bit of the real genomic k-mers (as long as there is enough signal). However these are just some gudances, what is sensible really depends on each individual datasets!
 
-Now we can finally find k-mer pairs by running `smudgeplot.py hetmers`. This command will interanlly call a C-kernel optimised for the searched designed by Gene Myers. We specify `-L 10` (the coverage threshold for genomic k-mers) and use 4 threads (`-t`). The parameter `-o` just specifies the pattern for the output files
+Now we can finally find k-mer pairs by running `smudgeplot hetmers`. This command will interanlly call a C-kernel optimised for the searched designed by Gene Myers. We specify `-L 10` (the coverage threshold for genomic k-mers) and use 4 threads (`-t`). The parameter `-o` just specifies the pattern for the output files
 
 ```
+cd ../../.. # back to the repo root
 smudgeplot hetmers data/Scer/FastK_Table -L 10 -t 4 -o data/Scer/smudgeplot_pairs
 ```
 
