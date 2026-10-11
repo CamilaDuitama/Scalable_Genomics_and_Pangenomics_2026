@@ -103,14 +103,14 @@ Let's start with a simple spectrum before analysing the one we visualised before
 ```bash
 # assuming you downloaded and work in the Scalable_Genomics_and_Pangenomics directory
 cd course_data_2026/histograms/homozygous_diploid
-genomescope.R -i Timema_monikensis_k21.hist -o . -n timema -k 21
+genomescope2 -i Timema_monikensis_k21.hist -o . -n timema -k 21
 ```
 
 This is a simple fit, with default parameters the model converge to a genome size that is in the right ballpark (a bit over 1Gbp) and the species is predicted to be homozygous. This is what we excpect when things are easy.
 
 ## Fitting more models
 
-The directory `course_data_2026/histograms` contains several k-mer spectra. Try to fit them one by one and make sense out of the fits. Many of the fits will require non-default parameters, you can look at the GenomeScope help (`GenomeScope.R --help`) and try to figure out how to do it, underneath there is a walkthrough with explanations.
+The directory `course_data_2026/histograms` contains several k-mer spectra. Try to fit them one by one and make sense out of the fits. Many of the fits will require non-default parameters, you can look at the GenomeScope help (`genomescope2 --help`) and try to figure out how to do it, underneath there is a walkthrough with explanations.
 
 The recommended order is begonia, strawberry, human, and toad.
 
@@ -125,7 +125,7 @@ This one converges well with the default
 
 ```bash
 cd course_data_2026/histograms/begonia_simple_heterozygous_diploid 
-genomescope.R -i Begonia_luxurians_k21.hist -o . -n begonia -k 21
+genomescope2 -i Begonia_luxurians_k21.hist -o . -n begonia -k 21
 ```
 
 </details>
@@ -141,8 +141,8 @@ The default run converges to a heterozygous and by far too small genome. If you 
 
 ```bash
 cd course_data_2026/histograms/convergence_problem
-genomescope.R -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria # does not converge well
-genomescope.R -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria_fixed -l 140 # yep, this is it
+genomescope2 -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria # does not converge well
+genomescope2 -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria_fixed -l 140 # yep, this is it
 ```
 
 </details>
@@ -153,7 +153,7 @@ Another simple case is the Human genome. This is specficially one of the sequenc
 
 ```bash
 cd course_data_2026/histograms/human
-genomescope.R -i m84005_220919_232112_s2.hifi_reads.bam.21.kmc.nozero.hist -o . -n hsap -k 21
+genomescope2 -i m84005_220919_232112_s2.hifi_reads.bam.21.kmc.nozero.hist -o . -n hsap -k 21
 ```
 
 what do you see? Do you trust the genome size / heterozygosity estimates? What could possibly be throwing them off?
@@ -172,13 +172,13 @@ ault parameters of kmc (`bombina_naive_kmc_k21.hist`), which don't count coverag
   <summary>What do you think would be the consequences of fitting models to one or the other for the gneome size estimation?</summary>
 
 ```
-genomescope.R -i bombina_naive_kmc_k21.hist -o . -n naive
+genomescope2 -i bombina_naive_kmc_k21.hist -o . -n naive
 ```
 
 Hmmm, the model looks quite alright, but the genome is much smaller than what one would expect for a firebelly toad. Try to fit the same model to a histogram with all the k-mers counted (`bombina_sp_k21.hist`).
 
 ```
-genomescope.R -i bombina_sp_k21.hist -o . -n kmc_full
+genomescope2 -i bombina_sp_k21.hist -o . -n kmc_full
 ```
 
 </details>
