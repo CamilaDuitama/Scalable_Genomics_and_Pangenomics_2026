@@ -18,7 +18,7 @@ In this workshop, we will use FastK mostly because it is very fast as well as co
 
 ### building the first k-mer spectrum using FastK
 
-Either download the dataset, or use the pre-downloaded dataset in the gitpod.
+Download the dataset:
 
 ```
 mkdir -p data/Scer && wget -P data/Scer https://sk13.cog.sanger.ac.uk/SRR3265401_{1,2}.fastq.gz
