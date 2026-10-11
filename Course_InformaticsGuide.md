@@ -96,22 +96,22 @@ sudo docker run hello-world
 
 Pull the pre-built image from Docker Hub: [`npmalfoy/scalable`](https://hub.docker.com/r/npmalfoy/scalable).
 
-Mount a local data directory (and an optional writable work directory) so tools can read inputs and write outputs outside the container.
+Run the container from inside the cloned course repository, so the whole repository (data and practicals) is available in the container at `/course`.
 
-**Docker** (interactive shell; adjust host paths as needed):
+**Docker** (interactive shell):
 
 ```bash
 docker pull npmalfoy/scalable:2026
 
-mkdir -p work
+cd Scalable_Genomics_and_Pangenomics_2026
 docker run --rm -it \
   --platform linux/amd64 \
-  -v "$PWD/datasets:/data/datasets:ro" \
-  -v "$PWD/work:/data/work" \
+  -v "$PWD:/course" \
+  -w /course \
   npmalfoy/scalable:2026
 ```
 
-Inside the container, tools are on `PATH`; read data from `/data/datasets` and write under `/data/work`. On Apple Silicon (or other arm64 hosts), keep `--platform linux/amd64`.
+Inside the container, tools are on `PATH` and you start in `/course`. Files you write under `/course` stay in the repository on your computer; anything written elsewhere is lost when you exit. On Apple Silicon (or other arm64 hosts), keep `--platform linux/amd64`.
 
 **Singularity / Apptainer:**
 
