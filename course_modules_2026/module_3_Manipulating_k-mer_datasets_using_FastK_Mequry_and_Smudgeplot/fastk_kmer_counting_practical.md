@@ -284,6 +284,7 @@ The `-bc<n>` option tells FastK to ignore the first *n* bases of each read or se
 
 ```
 HAPmaker -v -T4 Mother.ktab Father.ktab Child.ktab
+mkdir -p merqury
 MerquryFK Child.ktab Father.ktab Mother.ktab Hap1.fasta Hap2.fasta merqury/merqury
 ```
 **Answer**
