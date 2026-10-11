@@ -643,7 +643,6 @@ You can also convert a GFA into synteny blocks for the same visualiser — see t
 | --------------------- | ------------------------------- | -------------------------------- |
 | AGC                   | `$AGC`                          | `$FASTA_DIR/*.fa`                |
 | Mumemto               | `$DATA/mumemto/*`               | synteny PDF; R64 coverage / BED  |
-| *(Temp.)* compression | FASTAs + GFA S-lines + coverage | totals / lower-bound ratios      |
 | SVbyEye               | `$DATA/alignments/*.paf`        | AVA synteny PDF/PNG (19 genomes) |
 | BandageNG             | PGGB + MC GFAs                  | thickened topology PNGs          |
 | *(Opt.)* odgi         | PGGB GFA + MUM BED              | depth PNG + MUM-paint **SVG**    |
