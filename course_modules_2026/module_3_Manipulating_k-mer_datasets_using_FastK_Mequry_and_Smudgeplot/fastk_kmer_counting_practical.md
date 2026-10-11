@@ -215,15 +215,14 @@ That will be a sequencing error!
 
 A postfix range such as `[5-10]` retains k-mers whose counts are in that range. `[-10,20-]` retains counts from 1–10 or 20 and above. The prefix `#` changes all k-mer counts in a table to 1.
 
-Example command structure:
+Logex takes `-h` arugment to make both table `.ktab` and histogram `.hist` and `-H` to compute only the histogram. Example command structure:
 
 ```bash
-Logex 'out=(A|+B)' Child Mother ## this does not work well
+Logex -H 'CM=(A|+B)' Child Mother
+Histex CM
 ```
 
-This writes a table named `out` using the sum-count union of the `Child` and `Mother` tables. Use quoted expressions so the shell passes the expression to Logex as one argument.
-
-If the output table already exists, Logex asks `Output table ./out.ktab already exists, continue?` and waits for an answer, so the terminal looks frozen. Type `y` to overwrite, or use a new output name for each task.
+This writes a table named `CM` using the sum-count union of the `Child` and `Mother` tables. Use quoted expressions so the shell passes the expression to Logex as one argument. If the output table already exists, Logex asks `Output table ./out.ktab already exists, continue?` and waits for an answer, so the terminal looks frozen. Type `y` to overwrite, or use a new output name for each task.
 
 ```bash
 FastK -v -k21 -t1 -p -T4 Hap1.fasta -NHap1
@@ -251,68 +250,21 @@ FastK -k21 -p:Mother Child.Reads.fasta -NChild_Mother
 FastK -k21 -p:Father Child.Reads.fasta -NChild_Father
 ```
 
-### Task 7.1
-Generate a relative profile of the child reads against the mother table and against the father table.
-
-**Answer**
-
-ANSWER
-
-### Task 7.2
-Use `Profex -z` to inspect several reads in both relative-profile outputs. What pattern might help you decide whether a read is more consistent with the maternal or paternal k-mer set?
-
-**Answer**
-
-ANSWER
-
-### Task 7.3
-Why can a relative profile contain zero counts even when the input read itself is valid DNA sequence?
-
-**Answer**
-
-ANSWER
-
-## 8. Homopolymer compression and barcode prefixes
-
-FastK can count in homopolymer-compressed space with `-c`. In homopolymer compression, consecutive repeats of the same base are reduced to a single base; for example, `gtaaaattgccctaatgg` becomes `gtatgctatgg` (illustrative transformation from the lecture's explanation).
-
-The `-bc<n>` option tells FastK to ignore the first *n* bases of each read or sequence, which can be useful when reads begin with barcode sequences.
+If it's still Monday and you got it here already, STOP. Keep the rest for tomorrow.
 
 ## Merqury.FK
 
-### 
+### using trio datas
 
-```
-HAPmaker -v -T4 Mother.ktab Father.ktab Child.ktab
+Start by making haplotype files using `HAPmaker`
+
+```bash
+HAPmaker -v -T4 Mother.ktab Father.ktab Child.ktab # generated Mother.hap.ktab and Father.hap.ktab
 mkdir -p merqury
 MerquryFK Child.ktab Father.ktab Mother.ktab Hap1.fasta Hap2.fasta merqury/merqury
 ```
-**Answer**
 
-ANSWER
+Now, all these calculations and plotted histograms are just series of `Logex` expressions passed into simple plotting scripts. Try to go through all the plots (explained in the lecture), and perhaps try to rebuild some of the `Logex` expressions (for instance for k-mer completeness) or even you could try to recreate some of the figures in R. 
 
-### Task 9.2
-Summarise one biological or technical observation you can make from the histogram or read profiles. Refer to the evidence in your own output.
-
-**Answer**
-
-ANSWER
-
-### Task 9.3
-A k-mer table can be very large and may rely on hidden companion files in addition to the visible `.ktab` file. Why should you use the FastK companion file-management tools (such as `Fastmv`, `Fastcp`, or `Fastrm`) rather than moving or deleting only the visible table stub?
-
-**Answer**
-
-ANSWER
-
-## Checklist
-
-- [ ] Inspected the input files.
-- [ ] Ran FastK and identified the output files.
-- [ ] Generated and interpreted a histogram with Histex.
-- [ ] Inspected a k-mer table with Tabex.
-- [ ] Inspected a read profile with Profex.
-- [ ] Practised at least two Logex operations.
-- [ ] Generated or interpreted a relative profile.
-- [ ] Answered the reflection questions.
+## Smudgeplot
 
