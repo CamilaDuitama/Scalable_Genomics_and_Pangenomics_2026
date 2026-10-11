@@ -62,7 +62,7 @@ You should see two column tab-delimited file. The first column is the coverage, 
 Now that we know how to build histograms, let's try to interpret them and extract as much information about our genomes as we can from them Try to load the k-mer histogram and plot it in **R**.
 
 ```
-kmer_hist <- read.table('data/Scer/SRR3265401_k21.hist', col.names = c('cov', 'freq'))
+kmer_hist <- read.table('data/Scer/SRR3265401_k31.hist', col.names = c('cov', 'freq'))
 plot(kmer_hist$cov, kmer_hist$freq, type = 'l', xlab = 'Coverage', ylab = 'Frequency', main = 'Naive plot')
 ```
 
