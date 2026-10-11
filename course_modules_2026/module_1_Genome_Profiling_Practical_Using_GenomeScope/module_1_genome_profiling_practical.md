@@ -124,7 +124,7 @@ You can try also a more heterozygous organism, such as begonia (`begonia_simple_
 This one converges well with the default
 
 ```bash
-cd course_data_2026/histograms/begonia_simple_heterozygous_diploid 
+cd ../begonia_simple_heterozygous_diploid
 genomescope2 -i Begonia_luxurians_k21.hist -o . -n begonia -k 21
 ```
 
@@ -140,7 +140,7 @@ Try to fit a strawberry k-mer spectrum now (`course_data_2026/histograms/converg
 The default run converges to a heterozygous and by far too small genome. If you know about strawberries, both those will be already suspicious, but there is more to it - there is clearly one peak that is 1/2 of the coverage of the first peak included in the model. This is strongly suggesting it is part of the same genome and therefore should be part of the model. Seems the 1n coverage was estimated to be 2x as high as it should have been. You can give GenomeScope prior on coverage using parameter `-l`.
 
 ```bash
-cd course_data_2026/histograms/convergence_problem
+cd ../convergence_problem
 genomescope2 -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria # does not converge well
 genomescope2 -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria_fixed -l 140 # yep, this is it
 ```
@@ -152,7 +152,7 @@ genomescope2 -i Fragaria_iinumae_k21.hist -k 21 -p 2 -o . -n Fragaria_fixed -l 1
 Another simple case is the Human genome. This is specficially one of the sequencing runs of H002, which is a male sample. Try to fit the model to it (`course_data_2026/histograms/human`).
 
 ```bash
-cd course_data_2026/histograms/human
+cd ../human
 genomescope2 -i m84005_220919_232112_s2.hifi_reads.bam.21.kmc.nozero.hist -o . -n hsap -k 21
 ```
 
@@ -163,7 +163,7 @@ what do you see? Do you trust the genome size / heterozygosity estimates? What c
 The toad dataset 
 
 ```bash
-cd course_data_2026/histograms/toad_very_large_genome
+cd ../toad_very_large_genome
 ```
 The two k-mer histograms in this directory are corresponding to a k-mer histogram build with def
 ault parameters of kmc (`bombina_naive_kmc_k21.hist`), which don't count coverage over 10,000x and all k-mers with the coverage higher are simply reported as 10,000x k-mers. And a histogram with all the k-mers counted (`bombina_sp_k21.hist`).
@@ -196,6 +196,7 @@ In this example, a meaningful error threshold would be 10. As a rule of thumb, n
 Now we can finally find k-mer pairs by running `smudgeplot.py hetmers`. This command will interanlly call a C-kernel optimised for the searched designed by Gene Myers. We specify `-L 10` (the coverage threshold for genomic k-mers) and use 4 threads (`-t`). The parameter `-o` just specifies the pattern for the output files
 
 ```
+cd ../../.. # back to the repo root
 smudgeplot hetmers data/Scer/FastK_Table -L 10 -t 4 -o data/Scer/smudgeplot_pairs
 ```
 
