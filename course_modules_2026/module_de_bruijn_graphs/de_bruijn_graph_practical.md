@@ -106,7 +106,6 @@ Use this table to organise your results.
 | Dataset 2 |             |     |                    |                   |
 | Dataset 3 |             |     |                    |                   |
 
-Add more rows as needed.
 
 ---
 
@@ -148,7 +147,7 @@ Consult the script's help output or source code if you want to confirm exactly h
 Once the reads have been generated:
 
 1. Inspect the output from the script.
-2. Copy the reads into the visualisation tool.
+2. Copy the reads from the terminal into the visualisation tool.
 3. Generate a graph.
 4. Explore several *k*-mer lengths.
 5. Record your observations.
