@@ -266,6 +266,13 @@ The key lesson is that **there is no single best *k*-mer length or sequencing co
 
 Your task is to use the simulations to develop an evidence-based explanation of these relationships.
 
+Examples of de bruijn graphs in genomics: 
+
+Short reads: https://pmc.ncbi.nlm.nih.gov/articles/PMC3342519/ 
+
+Long reads: https://pmc.ncbi.nlm.nih.gov/articles/PMC8562525/ 
+
+Long reads: https://www.nature.com/articles/s41587-022-01220-6
 
 
 
