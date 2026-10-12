@@ -28,7 +28,7 @@ For larger reads, how does the graph change?
 
 Use the python script to simulate reads with different parameters. 
 
-'''
+```
 python simulate_reads.py \
     --length 100 \
     --coverage 2 \
@@ -36,8 +36,19 @@ python simulate_reads.py \
     --error-rate 0.01 \
     --heterozygosity 0.001 \
     --seed 42
-'''
+```
 
 Copy and paste these reads into the de bruijn graph interface. 
+
+### Change up your read set. 
+
+Try longer and shorter reads. 
+Try longer and shorter genomes. 
+Increase and decrease coverage. 
+Change the error rate (what happens with no errors?)
+Change the heterozygosity rate. 
+Increase heterozygosity and decrease coverage. 
+etc. 
+
 
 
