@@ -226,3 +226,39 @@ smudgeplot all data/Scer/smudgeplot_pairs.smu -o data/Scer/smudgeplot
 <summary><b> What do you think about ploidy of this species? </b></summary>
 Tetraploid, specifically of `AAAB` type. Notably, this constitution does not necesarily indicate one of the haplotypes is more divergent to others because we the B k-mers can be on different haplotype for each individual k-mer pair possibly making the 4 haplotypes equidistant. We can refute a hypothesis of two and two haplotypes that are closer to each genomes as subgenomes, as those would generate prominent AABB smudge, hence the genome is quite possibly autotetraploid.  
 </details>
+
+## Merqury.FK
+
+Is the tool to compare assemblies and read sets. You can visualise the copy numbers of k-mers in genomes in context of spectra and even using phasing information if the genomes were sequenced using trio sequencing.
+
+### trio datas
+
+```bash
+mkdir -p course_data_2026/trio && cd course_data_2026/trio
+wget https://kj11.cog.sanger.ac.uk/kmer_course_data/kmer_course_data/{Child,Father,Mother}.Reads.fasta
+wget https://kj11.cog.sanger.ac.uk/kmer_course_data/kmer_course_data/Hap{1,2}.fasta
+```
+
+and make k-mer databases for them all
+
+```bash
+FastK -v -k21 -t1 -p -T4 Child.Reads.fasta -NChild
+FastK -v -k21 -t1 -p -T4 Mother.Reads.fasta -NMother
+FastK -v -k21 -t1 -p -T4 Father.Reads.fasta -NFather
+```
+
+Now, you need to generate haplotype files using `HAPmaker`, which will enable phasing information in respect to parent of origin
+
+```bash
+HAPmaker -v -T4 Mother.ktab Father.ktab Child.ktab # generated Mother.hap.ktab and Father.hap.ktab
+```
+
+Finally, generate all the plots using Merqury.FK
+
+```bash
+mkdir -p merqury
+MerquryFK Child.ktab Father.ktab Mother.ktab Hap1.fasta Hap2.fasta merqury/merqury
+```
+
+Go through all the plots (explained in the lecture). Now, all these calculations and plotted histograms are just series of `Logex` expressions passed into simple plotting scripts. Once we go through Logex excercised tomorrow, perhaps try to rebuild some of the `Logex` expressions (for instance for k-mer completeness) or even you could try to recreate some of the figures in R. 
+

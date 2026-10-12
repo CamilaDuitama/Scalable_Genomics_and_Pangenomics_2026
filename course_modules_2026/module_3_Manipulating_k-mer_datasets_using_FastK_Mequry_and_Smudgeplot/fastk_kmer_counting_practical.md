@@ -58,7 +58,8 @@ For that, you use `Histex` too. It can give you number of unique k-mers (default
 
 <details> 
   <summary>Who has the most unique k-mers? Mother, father or Child? </summary>
-    ```
+
+    ```bash
     Histex Child | head
     Histex Father | head
     Histex Mother | head
@@ -71,18 +72,13 @@ To figure out how comes child has so much fewer unique k-mers, let's wait to see
 
 <details> 
   <summary>Who has the most k-mer instnces? Mother, father or Child? </summary>
-    ```
+
+    ```bash
     Histex -k Child | head
     Histex -k Father | head
     Histex -k Mother | head
     ```
     Perhaps 
-</details>
-
-
-<details> 
-  <summary>Question? </summary>
-    Answer
 </details>
 
 
@@ -251,18 +247,3 @@ FastK -k21 -p:Father Child.Reads.fasta -NChild_Father
 ```
 
 If it's still Monday and you got it here already, STOP. Keep Merqury practicals for tomorrow.
-
-## Merqury.FK
-
-### using trio datas
-
-Start by making haplotype files using `HAPmaker`
-
-```bash
-HAPmaker -v -T4 Mother.ktab Father.ktab Child.ktab # generated Mother.hap.ktab and Father.hap.ktab
-mkdir -p merqury
-MerquryFK Child.ktab Father.ktab Mother.ktab Hap1.fasta Hap2.fasta merqury/merqury
-```
-
-Now, all these calculations and plotted histograms are just series of `Logex` expressions passed into simple plotting scripts. Try to go through all the plots (explained in the lecture), and perhaps try to rebuild some of the `Logex` expressions (for instance for k-mer completeness) or even you could try to recreate some of the figures in R. 
-
