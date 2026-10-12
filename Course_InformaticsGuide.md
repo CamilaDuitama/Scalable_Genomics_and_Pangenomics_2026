@@ -119,7 +119,7 @@ Inside the container, tools are on `PATH` and you start in `/course`. Files you 
 apptainer pull scalable-course.sif docker://npmalfoy/scalable:2026
 
 apptainer shell \
-  --bind "$PWD:/course" -w /course \
+  --bind "$PWD:/course" --pwd /course \
   scalable-course.sif
 ```
 
